@@ -1,0 +1,7 @@
+#moviesTable tr:hover{ 
+    cursor:pointer;
+}
+
+#moviesTable th {
+    white-space: nowrap;
+  }

@@ -22,6 +22,9 @@ require('dotenv').config({path:"./Env.env"});
 const app = express();
 const HTTP_PORT= process.env.PORT || 8080;
 
+app.use(express.static(__dirname));
+
+
 // Setting for Data 
 const MoviesDB= require("./modules/moviesDB.js");
 const { error } = require("console");
@@ -33,10 +36,10 @@ app.use(express.json());
 app.use(cors());
 
 // Home page Route
-app.get('/', (req, res) => {
-    res.json({ message: 'API Listening' });
-});
-
+app.get("/", (req,res) => {
+  res.sendFile(path.join(__dirname,"index.html"));
+})
+    
 // "Initializing" the Module before the server starts
 db.initialize(process.env.MONGODB_CONN_STRING).then(()=>{ app.listen(HTTP_PORT, ()=>{
     console.log(`server listening on: ${HTTP_PORT}`); });
@@ -58,6 +61,22 @@ app.get("/api/movies", (req, res)=>{
     .then((movie) => { res.json(movie);})
     .catch((err) => { res.status(500).json(err)});
 })
+
+// Get /api/movies
+// It will use these values to return all "Movie" objects for a specific "page" to the client as well as optionally filtering by "title"
+app.get("/api/movies", (req, res) => {
+    const { page, perPage, title } = req.query;
+  
+    db.getAllMovies(page, perPage, title)
+      .then((movies) => {
+        res.json(movies);
+      })
+      .catch((err) => {
+        console.error("Error while retrieving movies:", err);
+        res.status(500).json({ error: "Failed to retrieve movies" });
+      });
+  });
+  
     
 // Get/api/movies
 // It will use this parameter to return a specific "Movie" object to the client
@@ -97,3 +116,5 @@ app.use((req, res) => {
     res.status(404).send("Page Not Found");
  });
     
+
+
